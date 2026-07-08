@@ -119,6 +119,9 @@ def survey_siswa(id_responden):
                 # =========================
                 hasil, confidence = predict_sentimen(komentar)
 
+                st.session_state["last_result"] = hasil
+                st.session_state["last_confidence"] = confidence
+
                 # =========================
                 # SIMPAN KOMENTAR
                 # =========================
