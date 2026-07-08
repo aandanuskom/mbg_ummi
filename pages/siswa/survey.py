@@ -119,9 +119,6 @@ def survey_siswa(id_responden):
                 # =========================
                 hasil, confidence = predict_sentimen(komentar)
 
-                st.session_state["last_result"] = hasil
-                st.session_state["last_confidence"] = confidence
-
                 # =========================
                 # SIMPAN KOMENTAR
                 # =========================
@@ -157,14 +154,30 @@ def survey_siswa(id_responden):
         # TAMPIL HASIL
         # =========================
 
-        hasil = st.session_state["last_result"].strip().upper()
+        conn = get_db()
 
-        if hasil == "PUAS":
-            st.success(f"😊 Hasil Sentimen: {hasil}")
-        elif hasil == "NETRAL":
-            st.info(f"😐 Hasil Sentimen: {hasil}")
-        elif hasil == "TIDAK PUAS":
-            st.error(f"😡 Hasil Sentimen: {hasil}")
+        query = """
+        SELECT hs.hasil
+        FROM hasil_sentimen hs
+        JOIN komentar k ON hs.id_komentar = k.id_komentar
+        WHERE k.id_responden = ?
+        ORDER BY hs.id_hasil DESC
+        LIMIT 1
+        """
+
+        df_hasil = pd.read_sql(query, conn, params=(id_responden,))
+        conn.close()
+
+        if not df_hasil.empty:
+
+            hasil = df_hasil.iloc[0]["hasil"].strip().upper()
+
+            if hasil == "PUAS":
+                st.success(f"😊 Hasil Sentimen: {hasil}")
+            elif hasil == "NETRAL":
+                st.info(f"😐 Hasil Sentimen: {hasil}")
+            elif hasil == "TIDAK PUAS":
+                st.error(f"😡 Hasil Sentimen: {hasil}")
 
     # =========================
     # GRAFIK
